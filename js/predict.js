@@ -5,6 +5,24 @@ let model;
         context = canvas.getContext('2d'),
         video = document.getElementById('webcam');
 
+    let availableDevices = [];
+
+    // enumerate devices and select the first camera (mostly the back one)
+    navigator.mediaDevices.enumerateDevices().then(function (devices) {
+        for (var i = 0; i !== devices.length; ++i) {
+            if (devices[i].kind === 'videoinput') {
+                console.log('Camera found: ', devices[i].label || 'label not found', devices[i].deviceId || 'id no found');
+                availableDevices.push({
+                    id: devices[i].deviceId,
+                    name: devices[i].label || 'label not found'
+                })
+            }
+        }
+
+        console.log(availableDevices);
+    });
+
+
     navigator.getMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
     navigator.getMedia({
@@ -17,6 +35,7 @@ let model;
             //error.code
         }
     );
+
 
     video.addEventListener('play', function () {
         draw(this, context, 640, 480);
@@ -48,9 +67,9 @@ let model;
 
                 // Render a rectangle over each detected face.
                 context.beginPath();
-                context.strokeStyle="green";
+                context.strokeStyle = "green";
                 context.lineWidth = "4";
-                context.rect(start[0], start[1],size[0], size[1]);
+                context.rect(start[0], start[1], size[0], size[1]);
                 context.stroke();
             }
         }
