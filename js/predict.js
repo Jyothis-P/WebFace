@@ -10,7 +10,9 @@ function log(text) {
     let canvas = document.getElementById('canvas'),
         context = canvas.getContext('2d'),
         video = document.getElementById('webcam'),
-        flip = document.getElementById('flipCamera');
+        flip = document.getElementById('flipCamera'),
+        roiElement = document.getElementById('roi'),
+        roiContext = roiElement.getContext('2d');
 
     let availableDevices = [],
         selectedDevice = 0,
@@ -51,6 +53,7 @@ function log(text) {
         video.height = height;
         canvas.width = width;
         canvas.height = height;
+        roiElement.style.top = height + 'px';
         console.log(width, height)
     }, false );
 
@@ -133,6 +136,8 @@ function log(text) {
                 context.lineWidth = "4";
                 context.rect(start[0], start[1], size[0], size[1]);
                 context.stroke();
+                roiContext.clearRect(0, 0, roiElement.width, roiElement.height);
+                roiContext.drawImage(video, start[0], start[1], size[0], size[1], 0, 0, size[0], size[1]);
             }
         }
 
