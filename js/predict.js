@@ -30,17 +30,29 @@ function log(text) {
                 video.srcObject = stream;
                 video.play();
                 let {width, height} = stream.getTracks()[0].getSettings();
-                video.width = width;
-                video.height = height;
-                canvas.width = width;
-                canvas.height = height;
+                // video.width = width;
+                // video.height = height;
+                // canvas.width = width;
                 console.log(`${width}x${height}`); // 640x480
+                log(video.height);
             })
             .then()
             .catch(error => {
                 console.error(error);
             });
+
+
     }
+
+    video.addEventListener( "loadedmetadata", function (e) {
+        var width = this.videoWidth,
+            height = this.videoHeight;
+        video.width = width;
+        video.height = height;
+        canvas.width = width;
+        canvas.height = height;
+        console.log(width, height)
+    }, false );
 
     // enumerate devices and select the first camera (mostly the back one)
     navigator.mediaDevices.enumerateDevices().then(function (devices) {
@@ -89,10 +101,10 @@ function log(text) {
 
 
     video.addEventListener('play', function () {
-        draw(this, context, 640, 480);
+        draw(this, context);
     }, false);
 
-    async function draw(video, context, width, height) {
+    async function draw(video, context) {
         if (!model) {
             log('Loading Model...')
             model = await blazeface.load();
@@ -105,6 +117,7 @@ function log(text) {
         // Clear the canvas before drawing new boxes.
         context.clearRect(0, 0, canvas.width, canvas.height);
 
+        console.log('Faces: ', predictions.length)
         if (predictions.length > 0) {
             for (const prediction of predictions) {
 
@@ -123,7 +136,7 @@ function log(text) {
             }
         }
 
-        timeout = setTimeout(draw, 100, video, context, width, height);
+        timeout = setTimeout(draw, 100, video, context);
     }
 })();
 
