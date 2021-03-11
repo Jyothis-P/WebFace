@@ -30,6 +30,10 @@ function log(text) {
                 video.srcObject = stream;
                 video.play();
                 let {width, height} = stream.getTracks()[0].getSettings();
+                video.width = width;
+                video.height = height;
+                canvas.width = width;
+                canvas.height = height;
                 console.log(`${width}x${height}`); // 640x480
             })
             .then()
