@@ -1,11 +1,41 @@
 let model;
+let statusElement = document.getElementById('status');
+
+function log(text) {
+    console.log(text);
+    statusElement.innerText = text;
+}
 
 (function () {
     let canvas = document.getElementById('canvas'),
         context = canvas.getContext('2d'),
-        video = document.getElementById('webcam');
+        video = document.getElementById('webcam'),
+        flip = document.getElementById('flipCamera');
 
-    let availableDevices = [];
+    let availableDevices = [],
+        selectedDevice = 0,
+        timeout;
+
+    function setCamera(index) {
+
+        let constraints = {
+            video: {deviceId: {exact: availableDevices[index].id}},
+            audio: false
+        };
+
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+                let {width, height} = stream.getTracks()[0].getSettings();
+                console.log(`${width}x${height}`); // 640x480
+            })
+            .then()
+            .catch(error => {
+                console.error(error);
+            });
+    }
 
     // enumerate devices and select the first camera (mostly the back one)
     navigator.mediaDevices.enumerateDevices().then(function (devices) {
@@ -19,22 +49,38 @@ let model;
             }
         }
 
+        if (availableDevices.length > 0) {
+            flip.disabled = false;
+            flip.innerText = 'Flip'
+            setCamera(selectedDevice);
+        }
         console.log(availableDevices);
     });
 
+    flip.addEventListener('click', () => {
+        log('Flipping camera.')
+        selectedDevice = (selectedDevice + 1) % availableDevices.length;
+        console.log('Selected camera -> ', availableDevices[selectedDevice].name);
 
-    navigator.getMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        // Clear the timeout so that the old video element isn't passed to tfjs.
+        clearTimeout(timeout);
+        model = false;
 
-    navigator.getMedia({
-            video: true,
-            audio: false
-        }, function (stream) {
-            video.srcObject = stream;
-            video.play();
-        }, function (error) {
-            //error.code
-        }
-    );
+        setCamera(selectedDevice);
+    })
+
+    // navigator.getMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+    //
+    // navigator.getMedia({
+    //         video: true,
+    //         audio: false
+    //     }, function (stream) {
+    //         video.srcObject = stream;
+    //         video.play();
+    //     }, function (error) {
+    //         //error.code
+    //     }
+    // );
 
 
     video.addEventListener('play', function () {
@@ -42,12 +88,10 @@ let model;
     }, false);
 
     async function draw(video, context, width, height) {
-        // context.drawImage(video, 0, 0, width / 2, height / 2);
-
         if (!model) {
-            console.log('Loading Model...')
+            log('Loading Model...')
             model = await blazeface.load();
-            console.log('Done.')
+            log('Done.')
         }
 
         const returnTensors = false;
@@ -74,7 +118,7 @@ let model;
             }
         }
 
-        setTimeout(draw, 100, video, context, width, height);
+        timeout = setTimeout(draw, 100, video, context, width, height);
     }
 })();
 
