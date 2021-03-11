@@ -22,6 +22,7 @@ function log(text) {
             video: {deviceId: {exact: availableDevices[index].id}},
             audio: false
         };
+        log(availableDevices[index].name);
 
         navigator.mediaDevices
             .getUserMedia(constraints)
