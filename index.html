@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>WebFace 0.1</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 </head>
+
 <body>
-    Why do you even need a server when you can do object detection with just client-side js. We'll start with Face Detection.
+    Why do you even need a server when you can do object detection with just client-side js.
     <br>
     <span id="status">Initializing...</span>
-    
+
     <button id="flipCamera" disabled>Searching for cameras...</button>
-    
+
     <div id="videoContainer" class="margin">
-        <video id="webcam" width="640" height="480" autoplay ></video>
+        <video id="webcam" width="640" height="480" autoplay></video>
         <canvas id="canvas" width="640" height="480"></canvas>
+        <canvas id="roi" width="640" height="480"></canvas>
     </div>
-    <canvas id="roi" width="640" height="480"></canvas>
+    <script src="js/difference.js"></script>
     <script src="js/predict.js"></script>
 </body>
 

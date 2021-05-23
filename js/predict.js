@@ -11,17 +11,19 @@ function log(text) {
         context = canvas.getContext('2d'),
         video = document.getElementById('webcam'),
         flip = document.getElementById('flipCamera'),
-        roiElement = document.getElementById('roi'),
-        roiContext = roiElement.getContext('2d');
+        differenceElement = document.getElementById('roi'),
+        differenceContext = differenceElement.getContext('2d');
 
     let availableDevices = [],
         selectedDevice = 0,
+        frames = 0,
+        time = Date.now(),
         timeout;
 
     function setCamera(index) {
 
         let constraints = {
-            video: {deviceId: {exact: availableDevices[index].id}},
+            video: { deviceId: { exact: availableDevices[index].id } },
             audio: false
         };
         log(availableDevices[index].name);
@@ -31,7 +33,7 @@ function log(text) {
             .then(stream => {
                 video.srcObject = stream;
                 video.play();
-                let {width, height} = stream.getTracks()[0].getSettings();
+                let { width, height } = stream.getTracks()[0].getSettings();
                 // video.width = width;
                 // video.height = height;
                 // canvas.width = width;
@@ -46,16 +48,17 @@ function log(text) {
 
     }
 
-    video.addEventListener( "loadedmetadata", function (e) {
+    video.addEventListener("loadedmetadata", function (e) {
         var width = this.videoWidth,
             height = this.videoHeight;
         video.width = width;
         video.height = height;
         canvas.width = width;
         canvas.height = height;
-        roiElement.style.top = height + 'px';
+        differenceElement.style.top = (height * 2) + 'px';
+        canvas.style.top = height + 'px';
         console.log(width, height)
-    }, false );
+    }, false);
 
     // enumerate devices and select the first camera (mostly the back one)
     navigator.mediaDevices.enumerateDevices().then(function (devices) {
@@ -82,66 +85,34 @@ function log(text) {
         selectedDevice = (selectedDevice + 1) % availableDevices.length;
         console.log('Selected camera -> ', availableDevices[selectedDevice].name);
 
-        // Clear the timeout so that the old video element isn't passed to tfjs.
-        clearTimeout(timeout);
         model = false;
 
         setCamera(selectedDevice);
     })
 
-    // navigator.getMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-    //
-    // navigator.getMedia({
-    //         video: true,
-    //         audio: false
-    //     }, function (stream) {
-    //         video.srcObject = stream;
-    //         video.play();
-    //     }, function (error) {
-    //         //error.code
-    //     }
-    // );
 
 
     video.addEventListener('play', function () {
-        draw(this, context);
+        draw();
     }, false);
 
-    async function draw(video, context) {
-        if (!model) {
-            log('Loading Model...')
-            model = await blazeface.load();
-            log('Done.')
+
+    function draw() {
+        context.drawImage(video, 0, 0);
+
+        let difference = subtractFrame();
+        let newImageData = new ImageData(difference, canvas.width, canvas.height);
+
+        differenceContext.putImageData(newImageData, 0, 0);
+        frames++;
+        let t = Date.now();
+        if (t - time > 1000){
+            console.log(frames);
+            console.log(frames / ((t - time) * 1000));
+            time = t;
+            frames = 0;
         }
-
-        const returnTensors = false;
-        const predictions = await model.estimateFaces(video, returnTensors);
-
-        // Clear the canvas before drawing new boxes.
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        console.log('Faces: ', predictions.length)
-        if (predictions.length > 0) {
-            for (const prediction of predictions) {
-
-                const start = prediction.topLeft;
-                const end = prediction.bottomRight;
-                let confidence = prediction.probability;
-
-                const size = [end[0] - start[0], end[1] - start[1]];
-
-                // Render a rectangle over each detected face.
-                context.beginPath();
-                context.strokeStyle = "green";
-                context.lineWidth = "4";
-                context.rect(start[0], start[1], size[0], size[1]);
-                context.stroke();
-                roiContext.clearRect(0, 0, roiElement.width, roiElement.height);
-                roiContext.drawImage(video, start[0], start[1], size[0], size[1], 0, 0, size[0], size[1]);
-            }
-        }
-
-        timeout = setTimeout(draw, 100, video, context);
+        requestAnimationFrame(draw);
     }
 })();
 
