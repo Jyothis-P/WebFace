@@ -1,6 +1,5 @@
-const Subtraction = () => (function () {
+const Subtraction = (canvas) => (function () {
     let previousImageData = false,
-        canvas = document.getElementById('canvas'),
         context = canvas.getContext('2d');
 
     function getFrameDifference(data, previousData) {
@@ -26,7 +25,7 @@ const Subtraction = () => (function () {
             return diff.data
         }
     }
-})();
+})(canvas);
 
 
 

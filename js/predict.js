@@ -20,7 +20,7 @@ function log(text) {
         time = Date.now(),
         timeout;
 
-    const subtraction = Subtraction();
+    const subtraction = Subtraction(canvas);
 
     function setCamera(index) {
 
