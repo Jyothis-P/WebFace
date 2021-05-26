@@ -20,6 +20,8 @@ function log(text) {
         time = Date.now(),
         timeout;
 
+    const subtraction = Subtraction();
+
     function setCamera(index) {
 
         let constraints = {
@@ -100,15 +102,14 @@ function log(text) {
     function draw() {
         context.drawImage(video, 0, 0);
 
-        let difference = subtractFrame();
+        let difference = subtraction.subtractFrame();
         let newImageData = new ImageData(difference, canvas.width, canvas.height);
 
         differenceContext.putImageData(newImageData, 0, 0);
         frames++;
         let t = Date.now();
         if (t - time > 1000){
-            console.log(frames);
-            console.log(frames / ((t - time) * 1000));
+            log(frames - 1 +  ' fps');
             time = t;
             frames = 0;
         }
