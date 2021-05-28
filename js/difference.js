@@ -22,6 +22,7 @@ const Subtraction = (canvas) => (function () {
             let diff = context.getImageData(0, 0, canvas.width, canvas.height);
             diff.data = getFrameDifference(diff.data, previousImageData.data);
             previousImageData = imageData;
+            console.log(diff.data)
             return diff.data
         }
     }
